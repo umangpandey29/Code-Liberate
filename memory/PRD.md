@@ -86,3 +86,40 @@ The dashboard view previously wrapped an external iframe (`nexawebstudio-zdhac67
 ### Verification
 - TypeScript: `tsc --noEmit` clean.
 - Preview screenshots confirm: 10 sections rendered, 0 "NexaWeb" strings remain, 14 "Code Liberate" mentions, gold/black palette consistent, no console errors.
+
+---
+
+## Update — 2026-04-20 (third iteration)
+
+### Multi-page site with React Router
+
+The single-page marketing experience has been split into **7 dedicated pages** using `react-router-dom@7`. Every nav click now navigates to a fresh page that auto-scrolls to the top.
+
+### Routes
+- `/` → HomePage: Hero + StatsStrip + 6 teaser cards linking to each sub-page + final "Limited Slots" CTA
+- `/work` → WorkPage: PageHero + StatsStrip + Portfolio + Testimonials + CTA
+- `/why` → WhyPage: PageHero + WhyUs + Numbers
+- `/process` → ProcessPage: PageHero + Process + CTA
+- `/pricing` → PricingPage: PageHero + Pricing + FAQ
+- `/faq` → FAQPage: PageHero + FAQ + CTA
+- `/contact` → ContactPage: PageHero + ContactForm (writes to Firestore `leads`)
+- `*` → redirects to `/`
+
+### New files
+- `src/components/ScrollToTop.tsx` — listens to `useLocation` and calls `window.scrollTo(0,0)` on every route change.
+- `src/components/SiteLayout.tsx` — wraps all routes with shared Navbar + `<Outlet />` + Footer.
+- `src/pages/HomePage.tsx`, `WorkPage.tsx`, `WhyPage.tsx`, `ProcessPage.tsx`, `PricingPage.tsx`, `FAQPage.tsx`, `ContactPage.tsx` — thin page wrappers composing the shared section blocks.
+
+### Refactors
+- `src/MarketingSite.tsx` now exports every section block (`Navbar`, `Hero`, `StatsStrip`, `Portfolio`, `WhyUs`, `Numbers`, `Process`, `Testimonials`, `Pricing`, `FAQ`, `ContactForm`, `Footer`, `PageHero`, `GoldButton`, `SectionEyebrow`, `SectionHeading`) so pages can compose them.
+- Each major section now accepts a `bare?: boolean` prop — when `true`, the section skips its internal eyebrow + heading block (because the page already has a `PageHero` above). This prevents duplicate headings on standalone pages. Every single page renders **exactly one `<h1>`** (verified).
+- Navbar + Footer links swapped from anchor-hash to `<Link to="...">` (router-aware, no full-page reload).
+- Footer columns restructured: Company (Home/Work/Why/Process/Contact), Services (Web Design/Dev/SEO/Hosting → pricing), Resources (Pricing/FAQ/Contact).
+- Full-screen menu drawer updated: 7 menu items (Home, Work, Why Us, Process, Pricing, FAQ, Contact), each uses `pushState + popstate` dispatch to drive the router from outside `BrowserRouter`.
+
+### Verification
+- `tsc --noEmit`: clean.
+- All 7 routes load with `scrollY=0` on mount (auto-scroll to top works).
+- Every page has exactly 1 `<h1>` (no heading duplication).
+- Zero runtime console errors.
+- Navbar, Footer, and menu drawer `<Link>` navigation works without full reload; browser back/forward preserved.

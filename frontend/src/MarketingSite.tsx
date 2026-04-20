@@ -2,13 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * Code Liberate marketing site - native React rebuild of the original
- * NexaWeb Studios page with identical section order, copy, and layout.
- * Only brand name, logo, email, and color palette have been changed.
+ * Code Liberate site building blocks.
+ * Each block is exported so page files can compose multi-page views.
  */
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   Check,
@@ -28,10 +28,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-const BRAND_LOGO = '/logo.png';
-const BRAND_EMAIL = 'codeliberate2029@gmail.com';
+export const BRAND_LOGO = '/logo.png';
+export const BRAND_EMAIL = 'codeliberate2029@gmail.com';
 
-const PORTFOLIO_IMAGES = {
+export const PORTFOLIO_IMAGES = {
   aroma: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80&auto=format&fit=crop',
   nexus: 'https://img.rocket.new/generatedImages/rocket_gen_img_11cc2132a-1771902525376.png',
   greenleaf: 'https://img.rocket.new/generatedImages/rocket_gen_img_1d16df74c-1776141106893.png',
@@ -44,7 +44,7 @@ const PORTFOLIO_IMAGES = {
 /*  Small shared primitives                                            */
 /* ------------------------------------------------------------------ */
 
-const GoldButton = ({
+export const GoldButton = ({
   children,
   onClick,
   as = 'button',
@@ -82,13 +82,13 @@ const GoldButton = ({
   );
 };
 
-const SectionEyebrow = ({ children }: { children: React.ReactNode }) => (
+export const SectionEyebrow = ({ children }: { children: React.ReactNode }) => (
   <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.4em] text-gold-400/80 mb-4">
     {children}
   </p>
 );
 
-const SectionHeading = ({ children }: { children: React.ReactNode }) => (
+export const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] max-w-4xl">
     {children}
   </h2>
@@ -98,15 +98,15 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 /*  Navbar                                                             */
 /* ------------------------------------------------------------------ */
 
-const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPortalClick: () => void }) => {
+export const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPortalClick: () => void }) => {
   return (
     <header
       data-testid="site-navbar"
       className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xl border-b border-gold-400/10"
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between gap-4">
-        <a
-          href="#top"
+        <Link
+          to="/"
           data-testid="navbar-brand"
           className="flex items-center gap-3 shrink-0"
         >
@@ -115,14 +115,14 @@ const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPorta
             <p className="text-white font-black text-sm uppercase tracking-[0.18em] whitespace-nowrap">Code Liberate</p>
             <p className="hidden xl:block text-gold-400/70 text-[8px] uppercase tracking-[0.28em] whitespace-nowrap">We build businesses</p>
           </div>
-        </a>
+        </Link>
 
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-[11px] xl:text-[12px] font-semibold uppercase tracking-[0.18em] text-gray-300 flex-1 justify-center min-w-0">
-          <a href="#work" className="hover:text-gold-300 transition-colors whitespace-nowrap">Work</a>
-          <a href="#why" className="hover:text-gold-300 transition-colors whitespace-nowrap">Why Us</a>
-          <a href="#process" className="hover:text-gold-300 transition-colors whitespace-nowrap">Process</a>
-          <a href="#pricing" className="hover:text-gold-300 transition-colors whitespace-nowrap">Pricing</a>
-          <a href="#faq" className="hover:text-gold-300 transition-colors whitespace-nowrap">FAQ</a>
+          <Link to="/work" className="hover:text-gold-300 transition-colors whitespace-nowrap">Work</Link>
+          <Link to="/why" className="hover:text-gold-300 transition-colors whitespace-nowrap">Why Us</Link>
+          <Link to="/process" className="hover:text-gold-300 transition-colors whitespace-nowrap">Process</Link>
+          <Link to="/pricing" className="hover:text-gold-300 transition-colors whitespace-nowrap">Pricing</Link>
+          <Link to="/faq" className="hover:text-gold-300 transition-colors whitespace-nowrap">FAQ</Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -159,7 +159,8 @@ const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPorta
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-const Hero = ({ onPrototypeClick }: { onPrototypeClick: () => void }) => {
+export const Hero = ({ onPrototypeClick }: { onPrototypeClick: () => void }) => {
+  const navigate = useNavigate();
   return (
     <section
       id="top"
@@ -212,7 +213,7 @@ const Hero = ({ onPrototypeClick }: { onPrototypeClick: () => void }) => {
             <GoldButton testid="hero-cta-prototype" onClick={onPrototypeClick}>
               Get Free Prototype <ArrowRight className="w-4 h-4" />
             </GoldButton>
-            <GoldButton variant="ghost" as="a" href="#work" testid="hero-cta-work">
+            <GoldButton variant="ghost" onClick={() => navigate('/work')} testid="hero-cta-work">
               View Our Work
             </GoldButton>
           </div>
@@ -279,7 +280,7 @@ const Hero = ({ onPrototypeClick }: { onPrototypeClick: () => void }) => {
 /*  Stats strip                                                        */
 /* ------------------------------------------------------------------ */
 
-const StatsStrip = () => {
+export const StatsStrip = () => {
   const items = [
     { value: '50+', label: 'Projects Delivered' },
     { value: '96%', label: 'Client Retention' },
@@ -308,7 +309,7 @@ const StatsStrip = () => {
 /*  Portfolio                                                          */
 /* ------------------------------------------------------------------ */
 
-const Portfolio = () => {
+export const Portfolio = ({ bare = false }: { bare?: boolean } = {}) => {
   const projects = [
     { tag: 'Restaurant', title: 'Aroma Bites', result: '+240% online orders', img: PORTFOLIO_IMAGES.aroma },
     { tag: 'SaaS', title: 'Nexus SaaS', result: '3x sign-up rate', img: PORTFOLIO_IMAGES.nexus },
@@ -319,17 +320,19 @@ const Portfolio = () => {
   ];
 
   return (
-    <section id="work" className="px-6 sm:px-10 py-28">
+    <section id="work" className={`${bare ? 'pt-4 pb-28' : 'py-28'} px-6 sm:px-10`}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between gap-6 flex-wrap mb-14">
-          <div>
-            <SectionEyebrow>Our Work</SectionEyebrow>
-            <SectionHeading>Projects That Deliver Results</SectionHeading>
+        {!bare && (
+          <div className="flex items-end justify-between gap-6 flex-wrap mb-14">
+            <div>
+              <SectionEyebrow>Our Work</SectionEyebrow>
+              <SectionHeading>Projects That Deliver Results</SectionHeading>
+            </div>
+            <Link to="/contact" className="text-gold-400 hover:text-gold-300 font-bold text-sm uppercase tracking-[0.25em] inline-flex items-center gap-2">
+              View All Projects <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <a href="#contact" className="text-gold-400 hover:text-gold-300 font-bold text-sm uppercase tracking-[0.25em] inline-flex items-center gap-2">
-            View All Projects <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((p, i) => (
@@ -369,7 +372,7 @@ const Portfolio = () => {
 /*  Why Us                                                             */
 /* ------------------------------------------------------------------ */
 
-const WhyUs = () => {
+export const WhyUs = ({ bare = false }: { bare?: boolean } = {}) => {
   const features = [
     { icon: Sparkles, title: 'Free Prototype First', copy: 'See your website design before paying anything. Zero risk, total confidence.' },
     { icon: Zap, title: '7-Day Delivery', copy: 'Most projects live in under a week. No waiting months for your new website.' },
@@ -380,15 +383,17 @@ const WhyUs = () => {
   ];
 
   return (
-    <section id="why" className="px-6 sm:px-10 py-28 bg-[#060402]">
+    <section id="why" className={`px-6 sm:px-10 ${bare ? 'pt-4 pb-24' : 'py-28'} bg-[#060402]`}>
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16">
-          <SectionEyebrow>Why Code Liberate</SectionEyebrow>
-          <SectionHeading>The Agency That Actually Delivers</SectionHeading>
-          <p className="text-gray-400 text-base mt-6 max-w-2xl">
-            We've helped 50+ Indian businesses get websites that work as hard as they do.
-          </p>
-        </div>
+        {!bare && (
+          <div className="mb-16">
+            <SectionEyebrow>Why Code Liberate</SectionEyebrow>
+            <SectionHeading>The Agency That Actually Delivers</SectionHeading>
+            <p className="text-gray-400 text-base mt-6 max-w-2xl">
+              We've helped 50+ Indian businesses get websites that work as hard as they do.
+            </p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
@@ -417,11 +422,11 @@ const WhyUs = () => {
 /*  Numbers block                                                      */
 /* ------------------------------------------------------------------ */
 
-const Numbers = ({ onCTA }: { onCTA: () => void }) => {
+export const Numbers = ({ onCTA, bare = false }: { onCTA: () => void; bare?: boolean }) => {
   return (
-    <section className="px-6 sm:px-10 py-28">
+    <section className={`px-6 sm:px-10 ${bare ? 'py-16' : 'py-28'}`}>
       <div className="max-w-7xl mx-auto">
-        <SectionEyebrow>By the numbers</SectionEyebrow>
+        {!bare && <SectionEyebrow>By the numbers</SectionEyebrow>}
 
         <div className="grid lg:grid-cols-[1.3fr_1fr] gap-12 items-start">
           <div className="p-10 rounded-[36px] border border-gold-400/20 bg-gradient-to-br from-[#14100a] to-black">
@@ -470,7 +475,7 @@ const Numbers = ({ onCTA }: { onCTA: () => void }) => {
 /*  Process                                                            */
 /* ------------------------------------------------------------------ */
 
-const Process = () => {
+export const Process = ({ bare = false }: { bare?: boolean } = {}) => {
   const steps = [
     { day: 'Day 1', icon: MessageSquare, title: 'Tell Us Your Vision', copy: 'Fill out a quick form with your business details, goals, and design preferences. Takes 3 minutes.' },
     { day: 'Day 2–3', icon: Palette, title: 'Get Free Prototype', copy: 'Within 48 hours, we send you a fully designed mockup. No payment required at this stage.' },
@@ -479,11 +484,15 @@ const Process = () => {
   ];
 
   return (
-    <section id="process" className="px-6 sm:px-10 py-28 bg-[#060402]">
+    <section id="process" className={`px-6 sm:px-10 ${bare ? 'pt-4 pb-24' : 'py-28'} bg-[#060402]`}>
       <div className="max-w-7xl mx-auto">
-        <SectionEyebrow>How It Works</SectionEyebrow>
-        <SectionHeading>From Idea to Live in 7 Days</SectionHeading>
-        <p className="text-gray-400 mt-6 max-w-xl mb-14">No lengthy contracts. No upfront full payment. Just results.</p>
+        {!bare && (
+          <>
+            <SectionEyebrow>How It Works</SectionEyebrow>
+            <SectionHeading>From Idea to Live in 7 Days</SectionHeading>
+            <p className="text-gray-400 mt-6 max-w-xl mb-14">No lengthy contracts. No upfront full payment. Just results.</p>
+          </>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
           {steps.map((s, i) => (
@@ -527,7 +536,7 @@ const Process = () => {
 /*  Testimonials                                                       */
 /* ------------------------------------------------------------------ */
 
-const Testimonials = () => {
+export const Testimonials = ({ bare = false }: { bare?: boolean } = {}) => {
   const quotes = [
     {
       text: 'We interviewed 4 agencies. Code Liberate was the only one who showed us a prototype before asking for money. The website they built increased our online orders by 240% in 3 months.',
@@ -553,12 +562,16 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="px-6 sm:px-10 py-28">
+    <section className={`px-6 sm:px-10 ${bare ? 'py-16' : 'py-28'}`}>
       <div className="max-w-7xl mx-auto">
-        <SectionEyebrow>Client Results</SectionEyebrow>
-        <SectionHeading>Real Businesses, Real Results</SectionHeading>
+        {!bare && (
+          <>
+            <SectionEyebrow>Client Results</SectionEyebrow>
+            <SectionHeading>Real Businesses, Real Results</SectionHeading>
+          </>
+        )}
 
-        <div className="grid md:grid-cols-3 gap-6 mt-14">
+        <div className={`grid md:grid-cols-3 gap-6 ${bare ? '' : 'mt-14'}`}>
           {quotes.map((q) => (
             <figure
               key={q.name}
@@ -601,7 +614,7 @@ const Testimonials = () => {
 /*  Pricing                                                            */
 /* ------------------------------------------------------------------ */
 
-const Pricing = ({ onCTA }: { onCTA: () => void }) => {
+export const Pricing = ({ onCTA, bare = false }: { onCTA: () => void; bare?: boolean }) => {
   const tiers = [
     {
       name: 'Starter',
@@ -633,13 +646,17 @@ const Pricing = ({ onCTA }: { onCTA: () => void }) => {
   ];
 
   return (
-    <section id="pricing" className="px-6 sm:px-10 py-28 bg-[#060402]">
+    <section id="pricing" className={`px-6 sm:px-10 ${bare ? 'pt-4 pb-24' : 'py-28'} bg-[#060402]`}>
       <div className="max-w-7xl mx-auto">
-        <SectionEyebrow>Pricing</SectionEyebrow>
-        <SectionHeading>Transparent Pricing, Zero Surprises</SectionHeading>
-        <p className="text-gray-400 mt-6 max-w-xl mb-14">
-          Free prototype before any payment. 25% upfront after approval.
-        </p>
+        {!bare && (
+          <>
+            <SectionEyebrow>Pricing</SectionEyebrow>
+            <SectionHeading>Transparent Pricing, Zero Surprises</SectionHeading>
+            <p className="text-gray-400 mt-6 max-w-xl mb-14">
+              Free prototype before any payment. 25% upfront after approval.
+            </p>
+          </>
+        )}
 
         <div className="grid md:grid-cols-3 gap-6">
           {tiers.map((t) => (
@@ -681,9 +698,9 @@ const Pricing = ({ onCTA }: { onCTA: () => void }) => {
         </div>
 
         <div className="text-center mt-10">
-          <a href="#contact" className="text-gold-400 hover:text-gold-300 font-semibold text-sm uppercase tracking-[0.25em] inline-flex items-center gap-2">
+          <Link to="/contact" className="text-gold-400 hover:text-gold-300 font-semibold text-sm uppercase tracking-[0.25em] inline-flex items-center gap-2">
             View full pricing & add-ons <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>
@@ -694,7 +711,7 @@ const Pricing = ({ onCTA }: { onCTA: () => void }) => {
 /*  FAQ                                                                */
 /* ------------------------------------------------------------------ */
 
-const FAQ = () => {
+export const FAQ = ({ bare = false }: { bare?: boolean } = {}) => {
   const faqs = [
     { q: 'Do I really get a free prototype before paying?', a: 'Yes, 100%. We design a full mockup of your website homepage — no payment required. You only pay after you approve the design and decide to move forward.' },
     { q: 'How long does it take to build my website?', a: "Most websites are delivered within 5–7 days. Complex projects may take up to 14 days. We'll give you an exact timeline before starting." },
@@ -706,12 +723,16 @@ const FAQ = () => {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="px-6 sm:px-10 py-28">
+    <section id="faq" className={`px-6 sm:px-10 ${bare ? 'pt-4 pb-24' : 'py-28'}`}>
       <div className="max-w-4xl mx-auto">
-        <SectionEyebrow>FAQ</SectionEyebrow>
-        <SectionHeading>Questions We Get All The Time</SectionHeading>
+        {!bare && (
+          <>
+            <SectionEyebrow>FAQ</SectionEyebrow>
+            <SectionHeading>Questions We Get All The Time</SectionHeading>
+          </>
+        )}
 
-        <div className="mt-14 space-y-3">
+        <div className={`${bare ? '' : 'mt-14'} space-y-3`}>
           {faqs.map((f, i) => (
             <div
               key={f.q}
@@ -744,7 +765,7 @@ const FAQ = () => {
 /*  Contact                                                            */
 /* ------------------------------------------------------------------ */
 
-const ContactForm = ({ onSubmit }: { onSubmit: (data: any) => Promise<void> }) => {
+export const ContactForm = ({ onSubmit, bare = false }: { onSubmit: (data: any) => Promise<void>; bare?: boolean }) => {
   const [form, setForm] = useState({ name: '', email: '', business: '', style: '' });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -764,17 +785,19 @@ const ContactForm = ({ onSubmit }: { onSubmit: (data: any) => Promise<void> }) =
   };
 
   return (
-    <section id="contact" className="px-6 sm:px-10 py-28 bg-[#060402]">
+    <section id="contact" className={`px-6 sm:px-10 ${bare ? 'pt-4 pb-24' : 'py-28'} bg-[#060402]`}>
       <div className="max-w-5xl mx-auto">
-        <div className="text-center">
-          <SectionEyebrow>Start Today</SectionEyebrow>
-          <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight">
-            Get Your Free <span className="bg-gradient-to-r from-gold-300 to-gold-600 bg-clip-text text-transparent">Website Prototype</span>
-          </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mt-6">
-            No payment. No commitment. Just a beautiful design of your future website — delivered in 48 hours.
-          </p>
-        </div>
+        {!bare && (
+          <div className="text-center">
+            <SectionEyebrow>Start Today</SectionEyebrow>
+            <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight">
+              Get Your Free <span className="bg-gradient-to-r from-gold-300 to-gold-600 bg-clip-text text-transparent">Website Prototype</span>
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto mt-6">
+              No payment. No commitment. Just a beautiful design of your future website — delivered in 48 hours.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-center gap-6 mt-10 mb-12 text-xs uppercase tracking-[0.25em] font-bold">
           <span className="text-gold-300 flex items-center gap-2"><Check className="w-4 h-4" /> Free prototype in 48 hours</span>
@@ -866,17 +889,17 @@ const ContactForm = ({ onSubmit }: { onSubmit: (data: any) => Promise<void> }) =
 /*  Footer                                                             */
 /* ------------------------------------------------------------------ */
 
-const Footer = () => (
+export const Footer = () => (
   <footer className="px-6 sm:px-10 pt-20 pb-10 border-t border-gold-400/10 bg-black">
     <div className="max-w-7xl mx-auto grid md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-10">
       <div>
-        <div className="flex items-center gap-3 mb-5">
+        <Link to="/" className="flex items-center gap-3 mb-5">
           <img src={BRAND_LOGO} alt="Code Liberate" className="w-10 h-10 object-contain" />
           <div>
             <p className="text-white font-black uppercase tracking-[0.2em] text-sm">Code Liberate</p>
             <p className="text-gold-400/70 text-[8px] uppercase tracking-[0.3em]">We build businesses</p>
           </div>
-        </div>
+        </Link>
         <p className="text-gray-500 text-sm leading-relaxed max-w-sm mb-5">
           India's premium web agency. Free prototype first. Transparent pricing. 7-day delivery.
         </p>
@@ -888,17 +911,32 @@ const Footer = () => (
           <Mail className="w-4 h-4" /> {BRAND_EMAIL}
         </a>
       </div>
-      {[
-        { title: 'Company', links: ['About', 'Our Work', 'Process', 'Contact'] },
-        { title: 'Services', links: ['Web Design', 'Web Development', 'SEO', 'Hosting'] },
-        { title: 'Legal', links: ['Privacy Policy', 'Terms of Service', 'Refund Policy'] },
-      ].map((col) => (
+      {([
+        { title: 'Company', links: [
+          { label: 'Home', to: '/' },
+          { label: 'Our Work', to: '/work' },
+          { label: 'Why Us', to: '/why' },
+          { label: 'Process', to: '/process' },
+          { label: 'Contact', to: '/contact' },
+        ] },
+        { title: 'Services', links: [
+          { label: 'Web Design', to: '/pricing' },
+          { label: 'Web Development', to: '/pricing' },
+          { label: 'SEO', to: '/pricing' },
+          { label: 'Hosting', to: '/pricing' },
+        ] },
+        { title: 'Resources', links: [
+          { label: 'Pricing', to: '/pricing' },
+          { label: 'FAQ', to: '/faq' },
+          { label: 'Contact', to: '/contact' },
+        ] },
+      ] as const).map((col) => (
         <div key={col.title}>
           <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-gold-400/80 mb-4">{col.title}</p>
           <ul className="space-y-2">
             {col.links.map((l) => (
-              <li key={l}>
-                <a href="#" className="text-gray-400 hover:text-gold-300 text-sm transition-colors">{l}</a>
+              <li key={l.label}>
+                <Link to={l.to} className="text-gray-400 hover:text-gold-300 text-sm transition-colors">{l.label}</Link>
               </li>
             ))}
           </ul>
@@ -913,36 +951,48 @@ const Footer = () => (
 );
 
 /* ------------------------------------------------------------------ */
-/*  Main export                                                        */
+/*  PageHero — shared page header used across all sub-pages            */
 /* ------------------------------------------------------------------ */
 
-export default function MarketingSite({
-  onOpenMenu,
-  onOpenPortal,
-  onLeadSubmit,
+export const PageHero = ({
+  eyebrow,
+  title,
+  subtitle,
 }: {
-  onOpenMenu: () => void;
-  onOpenPortal: () => void;
-  onLeadSubmit: (lead: { name: string; email: string; business: string; style: string }) => Promise<void>;
-}) {
-  const scrollToContact = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <Navbar onOpenMenu={onOpenMenu} onPortalClick={onOpenPortal} />
-      <Hero onPrototypeClick={scrollToContact} />
-      <StatsStrip />
-      <Portfolio />
-      <WhyUs />
-      <Numbers onCTA={scrollToContact} />
-      <Process />
-      <Testimonials />
-      <Pricing onCTA={scrollToContact} />
-      <FAQ />
-      <ContactForm onSubmit={onLeadSubmit} />
-      <Footer />
+  eyebrow: string;
+  title: React.ReactNode;
+  subtitle?: string;
+}) => (
+  <section className="pt-36 pb-16 px-6 sm:px-10 relative overflow-hidden">
+    <div className="absolute inset-0 -z-10 luxury-gradient" />
+    <div className="absolute top-[-20%] right-[-10%] w-[45%] h-[60%] bg-gold-400/5 blur-[140px] rounded-full -z-10" />
+    <div className="max-w-7xl mx-auto text-center">
+      <motion.p
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.4em] text-gold-400/80 mb-4"
+      >
+        {eyebrow}
+      </motion.p>
+      <motion.h1
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="font-serif italic text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[1.05] mb-6"
+      >
+        {title}
+      </motion.h1>
+      {subtitle && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
+        >
+          {subtitle}
+        </motion.p>
+      )}
     </div>
-  );
-}
+  </section>
+);
+

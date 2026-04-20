@@ -46,7 +46,16 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import MarketingSite from './MarketingSite';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
+import SiteLayout from './components/SiteLayout';
+import HomePage from './pages/HomePage';
+import WorkPage from './pages/WorkPage';
+import WhyPage from './pages/WhyPage';
+import ProcessPage from './pages/ProcessPage';
+import PricingPage from './pages/PricingPage';
+import FAQPage from './pages/FAQPage';
+import ContactPage from './pages/ContactPage';
 
 // --- Branding ---
 const BRAND_LOGO = '/logo.png';
@@ -595,26 +604,50 @@ export default function App() {
             exit={{ opacity: 0 }}
             className="min-h-screen bg-black"
           >
-            {/* Native Code Liberate Marketing Site (replaces external iframe) */}
-            <MarketingSite
-              onOpenMenu={() => setShowMenu(true)}
-              onOpenPortal={() => {
-                if (!user) {
-                  // Preview mode: send to full login
-                  window.location.href = window.location.pathname;
-                } else {
-                  setShowRequestModal(true);
-                }
-              }}
-              onLeadSubmit={async (lead) => {
-                await addDoc(collection(db, 'leads'), {
-                  ...lead,
-                  userId: user?.uid || 'anonymous-preview',
-                  createdAt: serverTimestamp(),
-                  status: 'New',
-                });
-              }}
-            />
+            {/* Multi-page Code Liberate marketing site (router-driven) */}
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
+                <Route
+                  element={
+                    <SiteLayout
+                      onOpenMenu={() => setShowMenu(true)}
+                      onOpenPortal={() => {
+                        if (!user) {
+                          window.location.href = window.location.pathname;
+                        } else {
+                          setShowRequestModal(true);
+                        }
+                      }}
+                    />
+                  }
+                >
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/work" element={<WorkPage />} />
+                  <Route path="/why" element={<WhyPage />} />
+                  <Route path="/process" element={<ProcessPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route
+                    path="/contact"
+                    element={
+                      <ContactPage
+                        onLeadSubmit={async (lead) => {
+                          await addDoc(collection(db, 'leads'), {
+                            ...lead,
+                            userId: user?.uid || 'anonymous-preview',
+                            createdAt: serverTimestamp(),
+                            status: 'New',
+                          });
+                        }}
+                      />
+                    }
+                  />
+                  <Route path="/portal" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
 
             {/* Elite Unified Hub Drawer - The 'Merged' Menu */}
             <AnimatePresence>
@@ -665,18 +698,23 @@ export default function App() {
 
                       <div className="flex flex-col items-center gap-4 w-full">
                         {[
-                          { label: 'Home', href: '#top' },
-                          { label: 'Work', href: '#work' },
-                          { label: 'Pricing', href: '#pricing' },
-                          { label: 'Contact', href: '#contact' },
+                          { label: 'Home', path: '/' },
+                          { label: 'Work', path: '/work' },
+                          { label: 'Why Us', path: '/why' },
+                          { label: 'Process', path: '/process' },
+                          { label: 'Pricing', path: '/pricing' },
+                          { label: 'FAQ', path: '/faq' },
+                          { label: 'Contact', path: '/contact' },
                         ].map((link) => (
                           <button 
                             key={link.label}
                             onClick={() => {
-                              document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
+                              window.history.pushState({}, '', link.path);
+                              window.dispatchEvent(new PopStateEvent('popstate'));
                               setShowMenu(false);
                             }}
-                            className="text-4xl sm:text-6xl font-black text-white hover:text-gold-400 transition-all uppercase tracking-tighter font-serif italic"
+                            data-testid={`menu-link-${link.label.toLowerCase().replace(' ', '-')}`}
+                            className="text-3xl sm:text-5xl font-black text-white hover:text-gold-400 transition-all uppercase tracking-tighter font-serif italic"
                           >
                             {link.label}
                           </button>
