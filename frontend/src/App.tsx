@@ -46,6 +46,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import MarketingSite from './MarketingSite';
 
 // --- Branding ---
 const BRAND_LOGO = '/logo.png';
@@ -577,10 +578,14 @@ export default function App() {
 
   if (loading) return <LoadingScreen />;
 
+  // Allow public preview of the marketing site via ?preview=1 (or when signed out)
+  const previewMode = typeof window !== 'undefined' && window.location.search.includes('preview=1');
+  const showMarketing = !!user || previewMode;
+
   return (
     <div className="min-h-screen text-white font-sans selection:bg-gold-500/30">
       <AnimatePresence mode="wait">
-        {!user ? (
+        {!showMarketing ? (
           <LoginView key="login" onLogin={handleLogin} authError={authError} isAuthenticating={isAuthenticating} />
         ) : (
           <motion.div 
@@ -588,83 +593,90 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex min-h-screen bg-black"
+            className="min-h-screen bg-black"
           >
-            {/* Code Liberate Portal View - Pure Iframe Experience */}
-            <div className="flex-1 relative overflow-hidden bg-black luxury-gradient">
-              <iframe 
-                id="site-frame"
-                src="https://nexawebstudio-zdhac67.public.builtwithrocket.new/"
-                className="w-full h-full border-none"
-                title="Code Liberate"
-                referrerPolicy="no-referrer"
-              />
+            {/* Native Code Liberate Marketing Site (replaces external iframe) */}
+            <MarketingSite
+              onOpenMenu={() => setShowMenu(true)}
+              onOpenPortal={() => {
+                if (!user) {
+                  // Preview mode: send to full login
+                  window.location.href = window.location.pathname;
+                } else {
+                  setShowRequestModal(true);
+                }
+              }}
+              onLeadSubmit={async (lead) => {
+                await addDoc(collection(db, 'leads'), {
+                  ...lead,
+                  userId: user?.uid || 'anonymous-preview',
+                  createdAt: serverTimestamp(),
+                  status: 'New',
+                });
+              }}
+            />
 
-              {/* GHOST TRIGGER - Perfectly aligned over your site's 3-bar menu */}
-              <button 
-                onClick={() => setShowMenu(true)}
-                className="absolute top-0 left-0 w-24 h-24 z-[100] cursor-pointer opacity-0"
-                title="Open Menu"
-              />
-
-              {/* Elite Unified Hub Drawer - The 'Merged' Menu */}
-              <AnimatePresence>
-                {showMenu && (
-                  <>
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => setShowMenu(false)}
-                      className="absolute inset-0 bg-black/95 backdrop-blur-xl z-[110]"
-                    />
-                    <motion.div 
-                      initial={{ x: -100, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -100, opacity: 0 }}
-                      className="absolute inset-0 z-[120] flex flex-col items-center justify-center p-10"
+            {/* Elite Unified Hub Drawer - The 'Merged' Menu */}
+            <AnimatePresence>
+              {showMenu && (
+                <>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowMenu(false)}
+                    className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[110]"
+                  />
+                  <motion.div 
+                    initial={{ x: -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -100, opacity: 0 }}
+                    className="fixed inset-0 z-[120] flex flex-col items-center justify-center p-10"
+                  >
+                    <button 
+                      onClick={() => setShowMenu(false)} 
+                      data-testid="menu-close-btn"
+                      className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors p-4"
                     >
-                      <button 
-                        onClick={() => setShowMenu(false)} 
-                        className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors p-4"
-                      >
-                        <X className="w-10 h-10" />
-                      </button>
+                      <X className="w-10 h-10" />
+                    </button>
 
-                      {/* Unified Navigation List */}
-                      <nav className="flex flex-col items-center gap-8 w-full max-w-md">
-                        <div className="flex flex-col items-center mb-8">
-                          <img
-                            src={BRAND_LOGO}
-                            alt="Code Liberate"
-                            data-testid="menu-brand-logo"
-                            className="w-20 h-20 object-contain mb-4 filter drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]"
-                          />
-                          <p className="text-[16px] font-black tracking-[0.1em] text-white uppercase mb-2">Code Liberate</p>
-                          <p className="text-gold-500/60 text-[7px] uppercase tracking-[0.4em] font-bold text-center leading-loose">
-                            We don't just build website. We build businesses
-                          </p>
-                          <a
-                            href={`mailto:${BRAND_EMAIL}`}
-                            data-testid="menu-brand-email"
-                            className="mt-3 text-[10px] font-semibold text-gold-400 hover:text-gold-300 uppercase tracking-[0.25em] transition-colors"
-                          >
-                            {BRAND_EMAIL}
-                          </a>
-                        </div>
-                        
-                        <div className="flex flex-col items-center gap-4 w-full">
-                          {[
-                            { label: 'Home', url: '/' }
-                          ].map((link) => (
-                            <button 
-                              key={link.label}
-                              onClick={() => {
-                                const frame = document.getElementById('site-frame') as HTMLIFrameElement;
-                                if (frame) frame.src = `https://nexawebstudio-zdhac67.public.builtwithrocket.new/${link.url}`;
+                    {/* Unified Navigation List */}
+                    <nav className="flex flex-col items-center gap-8 w-full max-w-md">
+                      <div className="flex flex-col items-center mb-8">
+                        <img
+                          src={BRAND_LOGO}
+                          alt="Code Liberate"
+                          data-testid="menu-brand-logo"
+                          className="w-20 h-20 object-contain mb-4 filter drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]"
+                        />
+                        <p className="text-[16px] font-black tracking-[0.1em] text-white uppercase mb-2">Code Liberate</p>
+                        <p className="text-gold-500/60 text-[7px] uppercase tracking-[0.4em] font-bold text-center leading-loose">
+                          We don't just build website. We build businesses
+                        </p>
+                        <a
+                          href={`mailto:${BRAND_EMAIL}`}
+                          data-testid="menu-brand-email"
+                          className="mt-3 text-[10px] font-semibold text-gold-400 hover:text-gold-300 uppercase tracking-[0.25em] transition-colors"
+                        >
+                          {BRAND_EMAIL}
+                        </a>
+                      </div>
+
+                      <div className="flex flex-col items-center gap-4 w-full">
+                        {[
+                          { label: 'Home', href: '#top' },
+                          { label: 'Work', href: '#work' },
+                          { label: 'Pricing', href: '#pricing' },
+                          { label: 'Contact', href: '#contact' },
+                        ].map((link) => (
+                          <button 
+                            key={link.label}
+                            onClick={() => {
+                              document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
                               setShowMenu(false);
                             }}
-                            className="text-5xl sm:text-7xl font-black text-white hover:text-gold-500 transition-all uppercase tracking-tighter font-serif italic"
+                            className="text-4xl sm:text-6xl font-black text-white hover:text-gold-400 transition-all uppercase tracking-tighter font-serif italic"
                           >
                             {link.label}
                           </button>
@@ -680,24 +692,26 @@ export default function App() {
                             setShowRequestModal(true);
                             setShowMenu(false);
                           }}
-                          className="bg-gold-500 text-white px-12 py-5 rounded-full font-black text-lg hover:bg-gold-600 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] active:scale-95 uppercase tracking-widest"
+                          data-testid="menu-client-portal-btn"
+                          className="bg-gold-400 text-black px-12 py-5 rounded-full font-black text-lg hover:bg-gold-300 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.25)] active:scale-95 uppercase tracking-widest"
                         >
                           Client Portal
                         </button>
-                          
-                          <button 
-                            onClick={handleLogout}
-                            className="text-gray-500 hover:text-red-500 font-bold uppercase tracking-widest text-xs transition-colors p-4"
-                          >
-                            Sign Out Account
-                          </button>
-                        </div>
-                      </nav>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+
+                        <button 
+                          onClick={handleLogout}
+                          data-testid="menu-signout-btn"
+                          className="text-gray-500 hover:text-red-500 font-bold uppercase tracking-widest text-xs transition-colors p-4"
+                        >
+                          Sign Out Account
+                        </button>
+                      </div>
+                    </nav>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
             <AnimatePresence>
               {showRequestModal && (
                 <RequestModal 

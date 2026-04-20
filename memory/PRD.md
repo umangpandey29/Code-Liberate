@@ -48,3 +48,41 @@ Redesign the existing "Code Liberate" (formerly referenced as "NexaWeb Studios")
 - P1: Add the Emergent preview domain to Firebase Authorized Domains so real Google Sign-In works in the preview.
 - P2: Replace the iframe-based dashboard with a native dashboard (full control of dark theme inside the marketing site).
 - P2: Surface the logged-in user's avatar + name in a small corner badge (once we can verify it doesn't conflict with the iframe's own nav).
+
+---
+
+## Update — 2026-04-20 (second iteration)
+
+### Full site "makeover" — Code Liberate native marketing site
+
+The dashboard view previously wrapped an external iframe (`nexawebstudio-zdhac67.public.builtwithrocket.new`). That iframe has been **replaced with a native React implementation** (`/app/frontend/src/MarketingSite.tsx`) so the whole site is now under our own styling control.
+
+**Preservation rule honored:** every section, the section order, every heading, every body copy, every stat, every CTA text, every feature, every pricing tier, every testimonial, every FAQ question, every form field — all identical to the original NexaWeb site scrape. **Only changed:** brand name → "Code Liberate", logo → user-provided gold crescent + star image, contact email → `codeliberate2029@gmail.com`, color palette → pure black backgrounds (`#000` / `#060402` / `#0c0a07`) with gold accents (`#E1CB66`, `#D4AF37`, `#C5A028`).
+
+### Sections (top → bottom, all rendered natively)
+1. Sticky Navbar — logo + wordmark, anchor links (Work / Why Us / Process / Pricing / FAQ), Gmail mailto, Client Portal button, hamburger
+2. Hero — "India's Premium Web Agency · Est. 2024" pill, "We Don't Just Build Websites. We Build Businesses." headline, subhead, CTAs, A/R/S/K trust badges + "Trusted by 50+ businesses", gold logo showcase card with Speed/Design/Secure/Mobile/Launch pill
+3. Stats Strip — 50+ / 96% / ₹4,999 / 7 Days
+4. Portfolio — 6 project cards (Aroma Bites, Nexus SaaS, GreenLeaf Organic, FinEdge Capital, MediCare Plus, Spark Creative) with original image URLs
+5. Why Us — 6 feature cards
+6. By the Numbers — ₹2Cr+ hero stat + 4 metric cards + "Limited Slots" CTA
+7. Process — 4-step timeline (Day 1 → Day 5-7) + payment breakdown (0% / 25% / 75%)
+8. Testimonials — 3 client quotes with per-quote stats
+9. Pricing — Starter / Professional (Most Popular) / Premium tiers
+10. FAQ — 6 accordion items
+11. Contact — Free prototype form (Name, Business Email, Business Name, Preferred Design Style) → writes to Firestore `leads` collection
+12. Footer — logo + email + Company / Services / Legal columns + copyright
+
+### Functional additions
+- Form submissions go to Firestore `leads` collection (also works in `?preview=1` mode as `anonymous-preview`).
+- Client Portal button (navbar + menu drawer) opens the `RequestModal` for logged-in users.
+- Full-screen menu drawer now offers Home / Work / Pricing / Contact smooth-scroll links + Client Portal + Sign Out.
+- `?preview=1` query parameter renders the marketing site without login (for public preview / sharing).
+
+### Files added/changed
+- NEW: `/app/frontend/src/MarketingSite.tsx` (~620 lines, single file containing Navbar, Hero, StatsStrip, Portfolio, WhyUs, Numbers, Process, Testimonials, Pricing, FAQ, ContactForm, Footer).
+- UPDATED: `/app/frontend/src/App.tsx` — removed iframe, imported MarketingSite, wired onOpenMenu / onOpenPortal / onLeadSubmit, preview-mode gate, menu drawer now uses `fixed` positioning so it layers correctly over the scrolling marketing site.
+
+### Verification
+- TypeScript: `tsc --noEmit` clean.
+- Preview screenshots confirm: 10 sections rendered, 0 "NexaWeb" strings remain, 14 "Code Liberate" mentions, gold/black palette consistent, no console errors.
