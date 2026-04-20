@@ -6,6 +6,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged, 
   signOut, 
   User,
@@ -262,7 +264,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-const LoginView = ({ onLogin }: { onLogin: () => void; key?: string }) => {
+const LoginView = ({ onLogin, authError, isAuthenticating }: { onLogin: () => void; authError?: string | null; isAuthenticating?: boolean; key?: string }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
   return (
@@ -326,7 +328,9 @@ const LoginView = ({ onLogin }: { onLogin: () => void; key?: string }) => {
 
             <button
               onClick={onLogin}
-              className="w-full group relative flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 transform active:scale-[0.98] shadow-xl"
+              disabled={isAuthenticating}
+              data-testid="google-signin-button"
+              className="w-full group relative flex items-center justify-center gap-3 bg-white hover:bg-gray-100 disabled:opacity-70 disabled:cursor-not-allowed text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 transform active:scale-[0.98] shadow-xl"
             >
               <img 
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
@@ -334,9 +338,27 @@ const LoginView = ({ onLogin }: { onLogin: () => void; key?: string }) => {
                 className="w-5 h-5"
                 referrerPolicy="no-referrer"
               />
-              <span>{mode === 'signin' ? 'Continue with Google' : 'Sign up with Google'}</span>
+              <span>
+                {isAuthenticating
+                  ? 'Connecting to Google…'
+                  : mode === 'signin' ? 'Continue with Google' : 'Sign up with Google'}
+              </span>
               <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-gold-500/30 transition-all pointer-events-none" />
             </button>
+
+            {authError && (
+              <div
+                data-testid="login-auth-error"
+                role="alert"
+                className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-left"
+              >
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-[11px] font-bold text-red-300 uppercase tracking-widest">Sign-in failed</p>
+                  <p className="text-xs text-red-100/90 leading-relaxed">{authError}</p>
+                </div>
+              </div>
+            )}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -435,8 +457,38 @@ export default function App() {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const mapAuthError = (err: any): string => {
+    const code = err?.code || '';
+    switch (code) {
+      case 'auth/unauthorized-domain':
+        return `This domain (${window.location.hostname}) isn't on your Firebase "Authorized domains" list. Open Firebase Console → Authentication → Settings → Authorized domains → Add domain → paste the hostname → Save, then try again.`;
+      case 'auth/operation-not-allowed':
+        return 'Google Sign-In is not enabled on this Firebase project. Open Firebase Console → Authentication → Sign-in method → Google → toggle "Enable", set a support email, then Save.';
+      case 'auth/popup-blocked':
+        return 'Your browser blocked the Google popup. Allow popups for this site (click the popup-blocked icon in the URL bar) and click "Continue with Google" again, or we will automatically retry with a full-page redirect.';
+      case 'auth/popup-closed-by-user':
+        return 'The Google sign-in window was closed before finishing. Click "Continue with Google" again and complete the sign-in.';
+      case 'auth/cancelled-popup-request':
+        return 'Another sign-in attempt is already in progress. Please wait a moment and try once more.';
+      case 'auth/network-request-failed':
+        return 'Network error while contacting Google. Check your internet connection and try again.';
+      case 'auth/internal-error':
+        return 'Firebase returned an internal error. Please try again in a few seconds.';
+      default:
+        return `${err?.message || 'Unknown error'}${code ? ` (${code})` : ''}`;
+    }
+  };
 
   useEffect(() => {
+    // Complete redirect-based sign-in if we came back from a redirect
+    getRedirectResult(auth).catch((err) => {
+      if (err?.code) {
+        setAuthError(mapAuthError(err));
+      }
+    });
+
     // Auth Listener
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       try {
@@ -450,7 +502,8 @@ export default function App() {
             photoURL: u.photoURL,
             lastLogin: serverTimestamp(),
           }, { merge: true });
-          
+
+          setAuthError(null);
           setUser(u);
         } else {
           setUser(null);
@@ -498,15 +551,22 @@ export default function App() {
   const handleLogin = async () => {
     if (isAuthenticating) return;
     setIsAuthenticating(true);
+    setAuthError(null);
     try {
       await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
     } catch (err: any) {
-      if (err.code === 'auth/popup-blocked') {
-        alert('The login popup was blocked by your browser. Please allow popups for this site and try again.');
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        console.log('Login request cancelled or already in progress.');
+      console.error('Login Error:', err);
+      const code = err?.code || '';
+      // If popup was blocked, automatically fall back to full-page redirect (no popup needed)
+      if (code === 'auth/popup-blocked') {
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          return; // browser is navigating away
+        } catch (redirectErr: any) {
+          setAuthError(mapAuthError(redirectErr));
+        }
       } else {
-        console.error('Login Error:', err);
+        setAuthError(mapAuthError(err));
       }
     } finally {
       setIsAuthenticating(false);
@@ -521,7 +581,7 @@ export default function App() {
     <div className="min-h-screen text-white font-sans selection:bg-gold-500/30">
       <AnimatePresence mode="wait">
         {!user ? (
-          <LoginView key="login" onLogin={handleLogin} />
+          <LoginView key="login" onLogin={handleLogin} authError={authError} isAuthenticating={isAuthenticating} />
         ) : (
           <motion.div 
             key="dashboard"
