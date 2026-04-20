@@ -104,28 +104,32 @@ const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPorta
       data-testid="site-navbar"
       className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-xl border-b border-gold-400/10"
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 h-20 flex items-center justify-between">
-        <a href="#top" data-testid="navbar-brand" className="flex items-center gap-3">
-          <img src={BRAND_LOGO} alt="Code Liberate" className="w-10 h-10 object-contain" />
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between gap-4">
+        <a
+          href="#top"
+          data-testid="navbar-brand"
+          className="flex items-center gap-3 shrink-0"
+        >
+          <img src={BRAND_LOGO} alt="Code Liberate" className="w-10 h-10 object-contain shrink-0" />
           <div className="leading-tight hidden sm:block">
-            <p className="text-white font-black text-sm uppercase tracking-[0.2em]">Code Liberate</p>
-            <p className="text-gold-400/70 text-[8px] uppercase tracking-[0.3em]">We build businesses</p>
+            <p className="text-white font-black text-sm uppercase tracking-[0.18em] whitespace-nowrap">Code Liberate</p>
+            <p className="hidden xl:block text-gold-400/70 text-[8px] uppercase tracking-[0.28em] whitespace-nowrap">We build businesses</p>
           </div>
         </a>
 
-        <nav className="hidden md:flex items-center gap-10 text-[12px] font-semibold uppercase tracking-[0.2em] text-gray-300">
-          <a href="#work" className="hover:text-gold-300 transition-colors">Work</a>
-          <a href="#why" className="hover:text-gold-300 transition-colors">Why Us</a>
-          <a href="#process" className="hover:text-gold-300 transition-colors">Process</a>
-          <a href="#pricing" className="hover:text-gold-300 transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-gold-300 transition-colors">FAQ</a>
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-[11px] xl:text-[12px] font-semibold uppercase tracking-[0.18em] text-gray-300 flex-1 justify-center min-w-0">
+          <a href="#work" className="hover:text-gold-300 transition-colors whitespace-nowrap">Work</a>
+          <a href="#why" className="hover:text-gold-300 transition-colors whitespace-nowrap">Why Us</a>
+          <a href="#process" className="hover:text-gold-300 transition-colors whitespace-nowrap">Process</a>
+          <a href="#pricing" className="hover:text-gold-300 transition-colors whitespace-nowrap">Pricing</a>
+          <a href="#faq" className="hover:text-gold-300 transition-colors whitespace-nowrap">FAQ</a>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <a
             href={`mailto:${BRAND_EMAIL}`}
             data-testid="navbar-email"
-            className="hidden lg:inline-flex items-center gap-2 text-[11px] font-semibold text-gold-400/80 hover:text-gold-300 uppercase tracking-[0.2em]"
+            className="hidden 2xl:inline-flex items-center gap-2 text-[11px] font-semibold text-gold-400/80 hover:text-gold-300 uppercase tracking-[0.18em] whitespace-nowrap"
           >
             <Mail className="w-4 h-4" />
             {BRAND_EMAIL}
@@ -133,14 +137,15 @@ const Navbar = ({ onOpenMenu, onPortalClick }: { onOpenMenu: () => void; onPorta
           <button
             onClick={onPortalClick}
             data-testid="navbar-portal-btn"
-            className="hidden sm:inline-flex items-center gap-2 bg-gold-400 text-black font-bold text-xs uppercase tracking-[0.2em] px-5 py-2.5 rounded-full hover:bg-gold-300 transition-colors"
+            className="hidden sm:inline-flex items-center gap-2 bg-gold-400 text-black font-bold text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 rounded-full hover:bg-gold-300 transition-colors whitespace-nowrap"
           >
             Client Portal
           </button>
           <button
             onClick={onOpenMenu}
             data-testid="navbar-menu-btn"
-            className="p-2 rounded-full border border-white/10 text-white hover:text-gold-300 hover:border-gold-400/40 transition-colors"
+            aria-label="Open menu"
+            className="p-2 rounded-full border border-white/10 text-white hover:text-gold-300 hover:border-gold-400/40 transition-colors shrink-0"
           >
             <MenuIcon className="w-5 h-5" />
           </button>
