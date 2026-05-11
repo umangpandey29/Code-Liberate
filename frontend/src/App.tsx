@@ -24,7 +24,7 @@ import {
   addDoc
 } from 'firebase/firestore';
 import { auth, db, googleProvider } from './lib/firebase';
-import emailjs from '@emailjs/browser';
+import { emailjs, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID } from './lib/emailjs';
 import { 
   LayoutDashboard, 
   LogOut, 
@@ -59,7 +59,7 @@ import ContactPage from './pages/ContactPage';
 
 // --- Branding ---
 const BRAND_LOGO = '/logo.png';
-const BRAND_EMAIL = 'codeliberate2029@gmail.com';
+const BRAND_EMAIL = 'codeliberate0812@gmail.com';
 
 // --- Types ---
 
@@ -117,28 +117,24 @@ const RequestModal = ({
       
       await addDoc(collection(db, 'requests'), requestData);
 
-      // 2. Send via EmailJS (We use placeholders for Service/Template IDs)
-      // The user will need to configure these in their EmailJS dashboard
-      // Service ID: 'service_codeliberate'
-      // Template ID: 'template_request'
-      // Public Key: 'YOUR_PUBLIC_KEY'
-      
+      // 2. Send via EmailJS — configured with live credentials in src/lib/emailjs.ts
       try {
         await emailjs.send(
-          'service_codeliberate', // Suggest user to name it like this
-          'template_request', 
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
           {
             from_name: user.displayName || 'Client',
             from_email: user.email,
             project_name: formData.projectName,
             request_type: formData.type,
             message: formData.message,
-            to_email: 'codeliberate2029@gmail.com',
-          },
-          'YOUR_PUBLIC_KEY' // Suggest user to put their public key here
+            to_email: BRAND_EMAIL,
+            subject: `New Client Request — ${formData.projectName} (${formData.type})`,
+            source: 'Client Portal',
+          }
         );
       } catch (emailErr) {
-        console.warn("EmailJS not configured yet, but data is saved in Firestore.", emailErr);
+        console.warn("EmailJS send failed — data is still saved in Firestore.", emailErr);
       }
 
       onSubmitSuccess();
@@ -633,12 +629,50 @@ export default function App() {
                     element={
                       <ContactPage
                         onLeadSubmit={async (lead) => {
-                          await addDoc(collection(db, 'leads'), {
-                            ...lead,
-                            userId: user?.uid || 'anonymous-preview',
-                            createdAt: serverTimestamp(),
-                            status: 'New',
-                          });
+                          let emailOk = false;
+                          let firestoreOk = false;
+
+                          // 1. Email notification via EmailJS — this is the critical path
+                          //    for "an order landing in Gmail", so fire it first and isolate
+                          //    any failure from the Firestore write below.
+                          try {
+                            await emailjs.send(
+                              EMAILJS_SERVICE_ID,
+                              EMAILJS_TEMPLATE_ID,
+                              {
+                                from_name: lead.name,
+                                from_email: lead.email,
+                                project_name: lead.business,
+                                request_type: `Free Prototype — ${lead.style}`,
+                                message: `New free-prototype request from ${lead.name} (${lead.email}) for "${lead.business}". Preferred design style: ${lead.style}.`,
+                                to_email: BRAND_EMAIL,
+                                subject: `New Free-Prototype Lead — ${lead.business}`,
+                                source: 'Marketing Site /contact',
+                              }
+                            );
+                            emailOk = true;
+                          } catch (emailErr) {
+                            console.warn('EmailJS lead notification failed.', emailErr);
+                          }
+
+                          // 2. Save lead to Firestore (best-effort backup log)
+                          try {
+                            await addDoc(collection(db, 'leads'), {
+                              ...lead,
+                              userId: user?.uid || 'anonymous-preview',
+                              createdAt: serverTimestamp(),
+                              status: 'New',
+                              emailSent: emailOk,
+                            });
+                            firestoreOk = true;
+                          } catch (fsErr) {
+                            console.warn('Firestore lead save failed (likely auth rules).', fsErr);
+                          }
+
+                          // Only surface an error if BOTH paths failed
+                          if (!emailOk && !firestoreOk) {
+                            throw new Error('Submission failed on both email and database paths.');
+                          }
                         }}
                       />
                     }

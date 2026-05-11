@@ -123,3 +123,20 @@ The single-page marketing experience has been split into **7 dedicated pages** u
 - Every page has exactly 1 `<h1>` (no heading duplication).
 - Zero runtime console errors.
 - Navbar, Footer, and menu drawer `<Link>` navigation works without full reload; browser back/forward preserved.
+
+---
+
+## Update — 2026-05-11 (fourth iteration)
+
+### EmailJS wired live + brand email change
+
+- **New file `src/lib/emailjs.ts`** centralises EmailJS credentials and calls `emailjs.init()` once at module load. Values: `SERVICE_ID=service_c4smf0m`, `TEMPLATE_ID=template_6cxxori`, `PUBLIC_KEY=002e-bFh3plFTrClF`.
+- **All `codeliberate2029@gmail.com` references replaced with `codeliberate0812@gmail.com`** (App.tsx + MarketingSite.tsx — verified with grep, 0 stale references remain).
+- **Client-portal RequestModal** (`App.tsx → RequestModal`) now sends real EmailJS notifications on submit, in addition to writing to Firestore `requests`.
+- **Marketing-site Contact form** (`onLeadSubmit` callback in App.tsx) restructured: **EmailJS runs first** (the "lead into Gmail" path), then Firestore as a best-effort log. If either succeeds the form renders the "Request received!" success state. Throws only if BOTH paths fail.
+- **Live end-to-end test** verified at `/contact?preview=1`: POST to `api.emailjs.com/api/v1.0/email/send` returns 200, success UI renders, the email is delivered to `codeliberate0812@gmail.com`. Firestore writes still fail in anonymous-preview mode because security rules require auth — that's expected and no longer blocks the email path.
+
+### Files changed
+- NEW: `src/lib/emailjs.ts`
+- EDIT: `src/MarketingSite.tsx` (BRAND_EMAIL constant)
+- EDIT: `src/App.tsx` (imports, BRAND_EMAIL constant, RequestModal handleSubmit, /contact route lead handler)

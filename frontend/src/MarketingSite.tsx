@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 
 export const BRAND_LOGO = '/logo.png';
-export const BRAND_EMAIL = 'codeliberate2029@gmail.com';
+export const BRAND_EMAIL = 'codeliberate0812@gmail.com';
 
 export const PORTFOLIO_IMAGES = {
   aroma: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80&auto=format&fit=crop',
