@@ -56,6 +56,12 @@ import ProcessPage from './pages/ProcessPage';
 import PricingPage from './pages/PricingPage';
 import FAQPage from './pages/FAQPage';
 import ContactPage from './pages/ContactPage';
+import DashboardLayout from './dashboard/DashboardLayout';
+import OrdersListPage from './dashboard/OrdersListPage';
+import OrderDetailPage from './dashboard/OrderDetailPage';
+import ActivityPage from './dashboard/ActivityPage';
+import ProfilePage from './dashboard/ProfilePage';
+import { createOrder } from './lib/orders';
 
 // --- Branding ---
 const BRAND_LOGO = '/logo.png';
@@ -103,21 +109,17 @@ const RequestModal = ({
     setLoading(true);
 
     try {
-      // 1. Save to Firestore
-      const requestData = {
+      // 1. Create order + seed conversation in Firestore
+      const orderDocId = await createOrder({
         userId: user.uid,
-        name: user.displayName || 'Client',
-        email: user.email,
+        userName: user.displayName || 'Client',
+        userEmail: user.email || '',
         projectName: formData.projectName,
         type: formData.type,
-        message: formData.message,
-        status: 'Pending',
-        createdAt: serverTimestamp(),
-      };
-      
-      await addDoc(collection(db, 'requests'), requestData);
+        description: formData.message,
+      });
 
-      // 2. Send via EmailJS — configured with live credentials in src/lib/emailjs.ts
+      // 2. Send via EmailJS - configured with live credentials in src/lib/emailjs.ts
       try {
         await emailjs.send(
           EMAILJS_SERVICE_ID,
@@ -129,15 +131,15 @@ const RequestModal = ({
             request_type: formData.type,
             message: formData.message,
             to_email: BRAND_EMAIL,
-            subject: `New Client Request — ${formData.projectName} (${formData.type})`,
-            source: 'Client Portal',
+            subject: `New Client Request - ${formData.projectName} (${formData.type})`,
+            source: `Client Portal · Order ${orderDocId}`,
           }
         );
       } catch (emailErr) {
-        console.warn("EmailJS send failed — data is still saved in Firestore.", emailErr);
+        console.warn("EmailJS send failed - order is still saved in Firestore.", emailErr);
       }
 
-      onSubmitSuccess();
+      onSubmitSuccess(orderDocId);
       onClose();
     } catch (err) {
       console.error("Submission error:", err);
